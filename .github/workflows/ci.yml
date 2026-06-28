@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-go:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gopherpot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - run: go mod tidy
+      - run: go build ./...
+      - run: go vet ./...
+
+  test-python:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: honeydashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m py_compile main.py database.py geoip.py dashboard.py cli_dashboard.py

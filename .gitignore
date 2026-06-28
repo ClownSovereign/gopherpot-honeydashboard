@@ -1,0 +1,16 @@
+# Go
+gopherpot/gopherpot
+gopherpot/host_key
+gopherpot/fallback_logs.jsonl
+
+# Python
+honeydashboard/venv/
+honeydashboard/__pycache__/
+honeydashboard/*.pyc
+honeydashboard/honeypot.db
+honeydashboard/GeoLite2-City.mmdb
+
+# Genel
+.DS_Store
+.env
+*.log

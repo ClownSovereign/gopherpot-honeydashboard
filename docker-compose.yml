@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  honeydashboard-api:
+    build: ./honeydashboard
+    container_name: honeydashboard-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - honeypot-data:/app/data
+    environment:
+      - DATABASE_URL=sqlite:///./data/honeypot.db
+      - GEOIP_BACKEND=ip-api
+    restart: unless-stopped
+    networks:
+      - honeynet
+
+  honeydashboard-ui:
+    build:
+      context: ./honeydashboard
+      dockerfile: Dockerfile.dashboard
+    container_name: honeydashboard-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - API_BASE_URL=http://honeydashboard-api:8000
+    depends_on:
+      - honeydashboard-api
+    restart: unless-stopped
+    networks:
+      - honeynet
+
+  gopherpot:
+    build: ./gopherpot
+    container_name: gopherpot
+    ports:
+      - "2222:2222"   # Gerçek 22 portunu host'ta NAT/iptables ile buraya yönlendir
+      - "8080:8080"
+    environment:
+      - BACKEND_URL=http://honeydashboard-api:8000/api/v1/log-submit
+      - SSH_PORT=2222
+      - HTTP_PORT=8080
+      - NODE_NAME=gopherpot-docker-1
+      - MAX_ATTEMPTS_PER_MIN=30
+    volumes:
+      - gopherpot-keys:/host_key_dir
+    depends_on:
+      - honeydashboard-api
+    restart: unless-stopped
+    networks:
+      - honeynet
+
+volumes:
+  honeypot-data:
+  gopherpot-keys:
+
+networks:
+  honeynet:
+    driver: bridge
