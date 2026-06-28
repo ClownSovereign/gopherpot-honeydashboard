@@ -1,6 +1,5 @@
 """
 geoip.py
---------
 IP -> ülke/şehir çözümlemesi.
 
 Varsayılan olarak ip-api.com'un ücretsiz endpoint'ini kullanıyoruz (key gerektirmez,

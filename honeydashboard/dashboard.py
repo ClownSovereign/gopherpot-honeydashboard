@@ -1,6 +1,5 @@
 """
 dashboard.py
-------------
 Streamlit tabanlı görsel panel. HoneyDashboard API'sinden veri çeker.
 
 Çalıştırma:
@@ -20,7 +19,7 @@ import streamlit as st
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 st.set_page_config(page_title="HoneyDashboard", page_icon="🕸️", layout="wide")
-st.title("🕸️ HoneyDashboard — Honeypot Saldırı İzleme Paneli")
+st.title(" HoneyDashboard — Honeypot Saldırı İzleme Paneli")
 
 REFRESH_SECONDS = 15
 st_autorefresh = st.empty()
@@ -36,7 +35,7 @@ def api_get(path: str):
         return None
 
 
-# ---- Özet metrikler ----
+# Özet metrikler
 summary = api_get("/api/v1/stats/summary") or {}
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("Toplam Deneme", summary.get("total_attempts", 0))
@@ -48,9 +47,9 @@ st.divider()
 
 left, right = st.columns(2)
 
-# ---- En çok denenen şifreler ----
+# En çok denenen şifreler
 with left:
-    st.subheader("🔑 En Çok Denenen Şifreler (SSH)")
+    st.subheader(" En Çok Denenen Şifreler (SSH)")
     top_pw = api_get("/api/v1/stats/top-passwords?limit=10")
     if top_pw:
         df_pw = pd.DataFrame(top_pw)
@@ -61,9 +60,9 @@ with left:
     else:
         st.info("Henüz veri yok.")
 
-# ---- Ülke dağılımı ----
+# Ülke dağılımı
 with right:
-    st.subheader("🌍 Saldırıların Geldiği Ülkeler")
+    st.subheader(" Saldırıların Geldiği Ülkeler")
     top_countries = api_get("/api/v1/stats/top-countries?limit=15")
     if top_countries:
         df_country = pd.DataFrame(top_countries)
@@ -74,8 +73,8 @@ with right:
 
 st.divider()
 
-# ---- Canlı log akışı ----
-st.subheader("📜 Son Saldırı Logları")
+# Canlı log akışı
+st.subheader(" Son Saldırı Logları")
 logs = api_get("/api/v1/logs?limit=200")
 if logs:
     df_logs = pd.DataFrame(logs)

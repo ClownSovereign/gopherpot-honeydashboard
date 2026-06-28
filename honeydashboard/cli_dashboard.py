@@ -1,6 +1,5 @@
 """
 cli_dashboard.py
------------------
 "Ben tamamen terminalciyim" diyenler için Rich tabanlı canlı panel.
 
 Çalıştırma:
@@ -39,11 +38,11 @@ def build_summary_panel() -> Panel:
         f"[bold]SSH:[/bold] {s.get('ssh_attempts', 0)}   "
         f"[bold]HTTP:[/bold] {s.get('http_attempts', 0)}"
     )
-    return Panel(text, title="📊 Özet", border_style="cyan")
+    return Panel(text, title=" Özet", border_style="cyan")
 
 
 def build_logs_table() -> Table:
-    table = Table(title="📜 Son Saldırı Logları", expand=True)
+    table = Table(title=" Son Saldırı Logları", expand=True)
     table.add_column("Zaman", style="dim", width=20)
     table.add_column("IP", style="bold red")
     table.add_column("Ülke")
@@ -66,7 +65,7 @@ def build_logs_table() -> Table:
 
 
 def build_top_passwords_table() -> Table:
-    table = Table(title="🔑 En Çok Denenen Şifreler")
+    table = Table(title=" En Çok Denenen Şifreler")
     table.add_column("Şifre")
     table.add_column("Sayı", justify="right")
     for row in (api_get("/api/v1/stats/top-passwords?limit=10") or []):

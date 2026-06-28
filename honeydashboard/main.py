@@ -1,6 +1,5 @@
 """
 main.py
--------
 HoneyDashboard backend. Tek görevi var: GopherPot ajanlarından gelen
 JSON loglarını kabul etmek, GeoIP ile zenginleştirmek ve veritabanına yazmak.
 Ayrıca Streamlit dashboard'unun (ya da herhangi bir istemcinin) veriyi
@@ -64,7 +63,7 @@ def submit_log(entry: LogSubmitRequest, db: Session = Depends(get_db)):
     return LogSubmitResponse(status="ok", id=db_entry.id)
 
 
-# ---- Dashboard / analiz için salt-okunur yardımcı endpoint'ler ----
+# Dashboard / analiz için salt-okunur yardımcı endpoint'ler
 
 @app.get("/api/v1/logs")
 def list_logs(limit: int = 100, db: Session = Depends(get_db)):

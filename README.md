@@ -6,13 +6,13 @@ ajanlar (`GopherPot`) sahte SSH ve HTTP servisleri sunarak saldırganları/botla
 backend'e (`HoneyDashboard`) raporlar. Veriler GeoIP ile zenginleştirilir ve
 Streamlit (web) veya Rich (terminal) panelinde canlı olarak izlenebilir.
 
-> ⚠️ **Güvenlik notu:** Bu proje eğitim/portfolyo amaçlıdır. Gerçek bir ağda
+>  **Güvenlik notu:** Bu proje eğitim/portfolyo amaçlıdır. Gerçek bir ağda
 > çalıştırmadan önce "İzolasyon ve Güvenlik" bölümünü okuyun. Bir honeypot'un
 > kendisi güvenlik açığı haline gelmemeli.
 
 ---
 
-## 🏗️ Mimari
+##  Mimari
 
 ```mermaid
 flowchart LR
@@ -52,7 +52,7 @@ backend'e POST eder. Backend o an ayakta değilse ajan veriyi
 
 ---
 
-## 📂 Klasör Yapısı
+##  Klasör Yapısı
 
 ```
 gopherpot-project/
@@ -80,7 +80,7 @@ gopherpot-project/
 
 ---
 
-## 🚀 Kurulum
+##  Kurulum
 
 ### Seçenek A — Docker (önerilen)
 
@@ -124,7 +124,7 @@ go run .
 
 ---
 
-## 🔐 İzolasyon ve Güvenlik (önemli)
+##  İzolasyon ve Güvenlik (önemli)
 
 1. **Honeypot'u gerçek sistemden izole et.** Ayrı bir Docker container, ayrı bir
    kullanıcı (`nobody`), mümkünse ayrı bir VM/VDS kullan. Honeypot'un kendisi
@@ -142,7 +142,7 @@ go run .
 
 ---
 
-## 🌐 GeoIP Notu
+##  GeoIP Notu
 
 Varsayılan backend `ip-api.com`'un ücretsiz, key gerektirmeyen endpoint'i
 (~45 istek/dk sınırı var). Daha güvenilir/limitsiz/offline kullanım için:
@@ -174,7 +174,7 @@ Tam interaktif dokümantasyon için backend ayaktayken `http://localhost:8000/do
 
 ---
 
-## 🧪 Hızlı Test (ajan olmadan)
+##  Hızlı Test (ajan olmadan)
 
 Backend'i ayağa kaldırdıktan sonra, gerçek bir saldırgan simüle edebilirsin:
 
@@ -186,7 +186,7 @@ curl -X POST http://localhost:8000/api/v1/log-submit \
 
 ---
 
-## 🛣️ Yol Haritası / Geliştirme Fikirleri
+##  Yol Haritası / Geliştirme Fikirleri
 
 - [ ] Çoklu ajan desteği için `node_name` bazlı filtreleme dashboard'a eklenebilir
 - [ ] Telnet/FTP gibi ek sahte servisler

@@ -1,6 +1,5 @@
 """
 database.py
------------
 SQLite tabanlı hafif veri katmanı. Başlangıç için yeterli;
 ileride PostgreSQL'e geçmek istersen sadece DATABASE_URL'i değiştirmek yeterli olur
 (SQLAlchemy zaten dialect bağımsız çalışıyor).
