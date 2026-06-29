@@ -199,3 +199,9 @@ curl -X POST http://localhost:8000/api/v1/log-submit \
 ## Lisans
 
 Bu proje eğitim/portfolyo amaçlıdır, istediğin gibi çoğaltıp değiştirebilirsin.
+
+---
+
+## Geliştirici notu 
+
+Projedeki hataları ve geliştirilebilir kısımları linklerimde bulunan Instagram , LinkedIn veya Reddit üzerinden iletirseniz çok sevinirim. Saygılarımla -ClownSovereign(Gerçek adıyla Efe)
