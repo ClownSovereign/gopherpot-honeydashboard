@@ -5,7 +5,7 @@ services:
     build: ./honeydashboard
     container_name: honeydashboard-api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"   # SADECE sunucunun kendisinden erişilebilir (güvenlik!)
     volumes:
       - honeypot-data:/app/data
     environment:
@@ -21,7 +21,7 @@ services:
       dockerfile: Dockerfile.dashboard
     container_name: honeydashboard-ui
     ports:
-      - "8501:8501"
+      - "127.0.0.1:8501:8501"   # SADECE sunucunun kendisinden erişilebilir (güvenlik!)
     environment:
       - API_BASE_URL=http://honeydashboard-api:8000
     depends_on:
