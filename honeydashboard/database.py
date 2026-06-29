@@ -7,7 +7,7 @@ ileride PostgreSQL'e geçmek istersen sadece DATABASE_URL'i değiştirmek yeterl
 import os
 from datetime import datetime
 
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, event
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./honeypot.db")
@@ -16,6 +16,21 @@ DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./honeypot.db")
 # (FastAPI istekleri farklı thread'lerde işleyebilir).
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
+
+# SQLite için WAL (Write-Ahead Logging) modu: okuma ve yazma işlemlerinin
+# birbirini kilitlemesini büyük ölçüde azaltır. busy_timeout ile de, kısa süreli
+# bir yazma çakışması olduğunda hemen "database is locked" hatası vermek yerine
+# birkaç saniye bekleyip tekrar denemesini sağlıyoruz. Orta ölçekli trafik için
+# (tek/birkaç GopherPot ajanı) bu yeterlidir; çok daha yüksek hacimde merkezi
+# bir PostgreSQL'e geçmek gerekir (bkz. README "Mimari Tercihler" bölümü).
+if DATABASE_URL.startswith("sqlite"):
+    @event.listens_for(engine, "connect")
+    def _set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA journal_mode=WAL;")
+        cursor.execute("PRAGMA busy_timeout=5000;")  # ms
+        cursor.close()
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

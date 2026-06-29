@@ -7,6 +7,10 @@ Varsayılan olarak ip-api.com'un ücretsiz endpoint'ini kullanıyoruz (key gerek
 veritabanını indirip yerel (offline) sorgu yapmak daha sağlıklı olur -- bunu
 GEOIP_BACKEND=maxmind ortam değişkeniyle aktif edebilirsin (geolite2 .mmdb dosyası
 ve `geoip2` paketi gerektirir, README'de anlatılıyor).
+
+Önemli: rate-limit'e (HTTP 429) ya da network hatasına düşülen sorgular CACHE'E
+YAZILMAZ. Aksi halde "Unknown" sonucu 6 saat boyunca önbellekte kalır ve o IP
+bir daha asla doğru çözümlenemez. Sadece başarılı sonuçlar cache'lenir.
 """
 import os
 import time
@@ -33,31 +37,38 @@ def resolve_location(ip: str) -> tuple[str, str]:
         return cached
 
     if GEOIP_BACKEND == "maxmind":
-        result = _resolve_with_maxmind(ip)
+        result, success = _resolve_with_maxmind(ip)
     else:
-        result = _resolve_with_ip_api(ip)
+        result, success = _resolve_with_ip_api(ip)
 
-    _CACHE[ip] = result
-    _cache_timestamps[ip] = now
+    # Sadece gerçekten başarılı bir sorguyu cache'liyoruz. Rate-limit (429) veya
+    # network hatası durumunda cache'lemiyoruz, böylece bir sonraki istekte
+    # tekrar denenir; "Unknown" sonucu kalıcı bir kör nokta haline gelmez.
+    if success:
+        _CACHE[ip] = result
+        _cache_timestamps[ip] = now
+
     return result
 
 
-def _resolve_with_ip_api(ip: str) -> tuple[str, str]:
+def _resolve_with_ip_api(ip: str) -> tuple[tuple[str, str], bool]:
     try:
         resp = requests.get(
             f"http://ip-api.com/json/{ip}",
             params={"fields": "status,country,city"},
             timeout=3,
         )
+        resp.raise_for_status()  # 429 / 5xx için exception fırlatır
+
         data = resp.json()
         if data.get("status") == "success":
-            return (data.get("country", "Unknown"), data.get("city", "Unknown"))
+            return (data.get("country", "Unknown"), data.get("city", "Unknown")), True
     except requests.RequestException:
         pass
-    return ("Unknown", "Unknown")
+    return ("Unknown", "Unknown"), False
 
 
-def _resolve_with_maxmind(ip: str) -> tuple[str, str]:
+def _resolve_with_maxmind(ip: str) -> tuple[tuple[str, str], bool]:
     """
     MaxMind GeoLite2-City.mmdb dosyasını kullanır (offline, hız sınırı yok).
     Kurulum: `pip install geoip2` ve GEOLITE2_DB_PATH ortam değişkenini
@@ -72,6 +83,6 @@ def _resolve_with_maxmind(ip: str) -> tuple[str, str]:
             resp = reader.city(ip)
             country = resp.country.name or "Unknown"
             city = resp.city.name or "Unknown"
-            return (country, city)
+            return (country, city), True
     except Exception:
-        return ("Unknown", "Unknown")
+        return ("Unknown", "Unknown"), False

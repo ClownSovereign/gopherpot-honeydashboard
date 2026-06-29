@@ -1,4 +1,4 @@
-# 🕸️ GopherPot + HoneyDashboard
+#  GopherPot + HoneyDashboard
 
 Hafif, modüler bir **honeypot izleme sistemi**. Go ile yazılmış düşük kaynaklı
 ajanlar (`GopherPot`) sahte SSH ve HTTP servisleri sunarak saldırganları/botları
@@ -159,7 +159,7 @@ açman gerekiyor.)
 
 ---
 
-## 📊 API Özeti
+##  API Özeti
 
 | Endpoint | Metod | Açıklama |
 |---|---|---|
@@ -196,6 +196,62 @@ curl -X POST http://localhost:8000/api/v1/log-submit \
 
 ---
 
+##  Mimari Tercihler & Sınırlamalar (Architectural Trade-offs)
+
+Bu proje, düşük kaynak tüketimli ve modüler bir **MVP/portfolyo** tasarımı olarak
+kurgulanmıştır. Geliştirme sürecinde bilinçli yapılan bazı mimari tercihler ve
+bunların kurumsal ölçekteki karşılıkları aşağıda özetlenmiştir:
+
+1. **Veri Depolama (SQLite vs. PostgreSQL)**
+   *Mevcut durum:* Hafiflik ve sıfır konfigürasyon için SQLite kullanılıyor.
+   Eşzamanlı yazma kilitlenmelerini azaltmak için veritabanı **WAL (Write-Ahead
+   Logging)** modunda çalışıyor, `busy_timeout=5000ms` ile destekleniyor
+   (`database.py`).
+   *Ölçeklenme senaryosu:* Onlarca GopherPot ajanı ve saniyede yüzlerce log
+   akışı söz konusu olduğunda merkezi bir **PostgreSQL** veya log-optimizasyonlu
+   **TimescaleDB**'ye geçilmeli. SQLAlchemy soyutlaması sayesinde bu geçiş
+   sadece `DATABASE_URL` değişkenini değiştirmekten ibarettir.
+
+2. **GeoIP Çözümleme Stratejisi**
+   *Mevcut durum:* Varsayılan olarak key gerektirmeyen `ip-api.com` kullanılıyor.
+   Rate-limit (HTTP 429) veya network hatası durumunda sonuç **cache'lenmiyor**
+   (`geoip.py`) — aksi halde "Unknown" yanıtı 6 saat boyunca önbellekte kalıp o
+   IP bir daha asla doğru çözümlenemezdi.
+   *Ölçeklenme senaryosu:* Canlı ağda yüksek hacimde tekil IP geldiğinde
+   `GEOIP_BACKEND=maxmind` ile yerel/offline MaxMind GeoLite2 veritabanına
+   geçilmesi önerilir.
+
+3. **Log Kuyruk Yönetimi (GopherPot Reporter)**
+   *Mevcut durum:* Go ajanı, backend'e log yetiştiremediğinde ana goroutine'leri
+   tıkamamak için 3 eşzamanlı worker + 1000 kapasiteli kanal kullanır
+   (`reporter.go`). Kuyruk dolarsa log sessizce düşürülmez, doğrudan
+   `fallback_logs.jsonl`'a (mutex korumalı) yazılır.
+   *Ölçeklenme senaryosu:* Çok daha agresif saldırı hacminde disk I/O
+   darboğazı yaşamamak için yerel bir log-rotasyon kütüphanesi veya hafif bir
+   log forwarder (Vector / Fluent Bit) mimariye eklenebilir.
+
+4. **Arayüz Tercihi (Streamlit)**
+   *Mevcut durum:* Hızlı prototipleme ve Pandas/Plotly entegrasyonu için
+   Streamlit seçildi.
+   *Ölçeklenme senaryosu:* Streamlit her state değişiminde script'i baştan
+   çalıştırdığı için çok yüksek veri hacminde CPU yükü oluşturabilir. Kurumsal
+   bir SOC paneli için backend'den Websocket ile beslenen bir React/Vue
+   arayüzü daha kararlı olur.
+
+5. **Container Güvenliği**
+   Python servisleri (`honeydashboard-api`, `honeydashboard-ui`) container
+   içinde **root olmayan** bir kullanıcı (`appuser`) ile çalışır — bir
+   bağımlılıkta RCE zafiyeti çıksa bile saldırgan root yetkisi elde edemez.
+   Go ajanı zaten `distroless` imajında, kabuk/araç bulunmadan çalışır.
+
+---
+
 ## Lisans
 
 Bu proje eğitim/portfolyo amaçlıdır, istediğin gibi çoğaltıp değiştirebilirsin.
+
+---
+
+## Geliştirici notu 
+
+Projedeki hataları ve geliştirilebilir kısımları linklerimde bulunan Instagram , LinkedIn veya Reddit üzerinden iletirseniz çok sevinirim. Saygılarımla -ClownSovereign(Gerçek adıyla Efe)
